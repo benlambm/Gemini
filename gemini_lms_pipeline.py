@@ -196,6 +196,66 @@ def clean_json_response(text: str) -> str:
     return text.strip()
 
 
+def escape_control_chars_in_strings(text: str) -> str:
+    """Escape control characters inside JSON string values."""
+    result = []
+    in_string = False
+    escape = False
+
+    for ch in text:
+        if escape:
+            result.append(ch)
+            escape = False
+            continue
+        if ch == "\\":
+            result.append(ch)
+            escape = True
+            continue
+        if ch == "\"":
+            in_string = not in_string
+            result.append(ch)
+            continue
+        if in_string:
+            if ch == "\n":
+                result.append("\\n")
+                continue
+            if ch == "\r":
+                result.append("\\r")
+                continue
+            if ch == "\t":
+                result.append("\\t")
+                continue
+        result.append(ch)
+
+    return "".join(result)
+
+
+def parse_json_response(text: str) -> tuple[Optional[dict], Optional[str]]:
+    """Parse JSON with light repair for common model output issues."""
+    cleaned = clean_json_response(text)
+    try:
+        return json.loads(cleaned), None
+    except json.JSONDecodeError as json_err:
+        repaired = escape_control_chars_in_strings(cleaned)
+        repaired = re.sub(r",\s*([}\]])", r"\1", repaired)
+        try:
+            return json.loads(repaired), None
+        except json.JSONDecodeError as json_err_repaired:
+            return None, str(json_err_repaired)
+
+
+def save_debug_response(state: PipelineState, stage: str, attempt: int, response_text: str) -> Optional[Path]:
+    """Persist raw model output to help debug parse failures."""
+    safe_stage = re.sub(r"[^a-z0-9_]+", "_", stage.lower()).strip("_")
+    filename = f"debug_{safe_stage}_attempt{attempt}.txt"
+    debug_path = state.config.output_dir / filename
+    try:
+        debug_path.write_text(response_text, encoding="utf-8")
+        return debug_path
+    except OSError:
+        return None
+
+
 def word_to_pattern(word: str) -> str:
     """Convert a word to a regex pattern allowing HTML entities."""
     result = []
@@ -379,14 +439,39 @@ def stage_d_brainstorm_images(state: PipelineState) -> bool:
         )
 
         response_text = response.text
-        cleaned = clean_json_response(response_text)
-        
-        try:
-            data = json.loads(cleaned)
-        except json.JSONDecodeError as json_err:
-            state.log(f"    ❌ Failed to parse JSON: {json_err}")
+        data, parse_error = parse_json_response(response_text)
+        if data is None:
+            state.log(f"    ❌ Failed to parse JSON: {parse_error}")
             state.log(f"    Debug - Raw Response: {response_text[:200]}...")
-            return False
+            debug_path = save_debug_response(state, "agent_d_brainstorm", 1, response_text)
+            if debug_path:
+                state.log(f"    Debug - Raw response saved to: {debug_path.name}")
+            state.log("    Retrying with stricter JSON-only instructions...")
+            retry_prompt = (
+                "Return ONLY valid minified JSON. Do not include literal newlines inside string values; "
+                "use \\n instead. If unsure, return {\"images\": []}.\n\n"
+                f"Analyze this HTML content and identify up to {MAX_IMAGES} optimal locations for educational images:\n\n"
+                f"{state.step_outputs['agent_c']}"
+            )
+            response = state.gemini_client.models.generate_content(
+                model=GEMINI_TEXT_MODEL,
+                contents=retry_prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_prompt,
+                    temperature=0.2,
+                    max_output_tokens=4096,
+                    response_mime_type="application/json"
+                ),
+            )
+            response_text = response.text
+            data, parse_error = parse_json_response(response_text)
+            if data is None:
+                state.log(f"    ❌ Failed to parse JSON after retry: {parse_error}")
+                state.log(f"    Debug - Raw Response: {response_text[:200]}...")
+                debug_path = save_debug_response(state, "agent_d_brainstorm", 2, response_text)
+                if debug_path:
+                    state.log(f"    Debug - Raw response saved to: {debug_path.name}")
+                return False
 
         for i, item in enumerate(data.get("images", [])[:MAX_IMAGES], start=1):
             plan = ImagePlan(
