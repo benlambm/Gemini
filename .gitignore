@@ -1,0 +1,16 @@
+# Outputs
+lms_output/
+
+# Local artifacts
+generated_images/
+
+# Python
+__pycache__/
+*.pyc
+
+# Environments and caches
+.venv/
+.mypy_cache/
+
+# IDE
+.idea/

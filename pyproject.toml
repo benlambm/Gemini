@@ -1,0 +1,11 @@
+[project]
+name = "gemini"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "anthropic>=0.75.0",
+    "google-genai>=1.56.0",
+    "openai>=2.14.0",
+    "protobuf>=6.33.2",
+]
