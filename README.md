@@ -16,6 +16,7 @@ Generate Canvas LMS-ready educational HTML using a four-agent prompt chain (cont
   - Force images: `--force-images`
   - Disable images: `--no-images`
 - Agent A prompt override (non-interactive): `--agent-a-instruction "<custom text>"`
+- Agent A preset (non-interactive): `--agent-a-preset blog_intro_1000`
 
 ## Requirements
 - Python 3.13+ (see `pyproject.toml`)

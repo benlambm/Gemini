@@ -1,0 +1,186 @@
+<h2 style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 2.25em; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 4px solid #000000; padding-bottom: 0.5em; margin-top: 0; margin-bottom: 1em; color: #000000;">The Limits of Logic: A Beginner’s Guide to Computational Complexity</h2>
+
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">Imagine you are planning a wedding. You have a list of ten guests and one large circular table. You want to seat them in a way that keeps feuding cousins apart and puts best friends together. With ten people, you might spend twenty minutes scribbling names on a napkin until everyone is happy.</p>
+
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">Now, imagine the wedding grows. You have 100 guests. Then 1,000. Suddenly, the number of possible seating arrangements isn't just growing—it is exploding. If you tried to test every possible combination for a 1,000-guest wedding, the sun would likely burn out before you found the perfect arrangement, even if you had the world’s fastest supercomputer helping you.</p>
+
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">This is the core of <strong style="font-weight: 800;">Computational Complexity</strong>. It is the study of why some problems are "easy" for computers to solve, while others are fundamentally, stubbornly, and perhaps eternally "hard." It isn't just a niche corner of computer science; it is a field that touches the very limits of human knowledge, the security of your bank account, and the mysteries of the universe.</p>
+
+<details style="background-color: #F5F5F5; border: 3px solid #000000; padding: 1.5em; margin: 2em 0; max-width: 75ch;">
+  <summary style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.1em; font-weight: 700; cursor: pointer; letter-spacing: 0.02em; color: #000000;">
+    ✦ KNOWLEDGE CHECK: What is the core focus of Computational Complexity?</summary>
+  <p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; margin-top: 1em; border-top: 2px solid #E0E0E0; padding-top: 1em; margin-bottom: 0; color: #000000;">
+    <strong style="font-weight: 800;">Answer:</strong> It is the study of why some problems are "easy" for computers to solve while others are fundamentally hard, focusing on how the resources required to solve a problem grow as the problem size increases.</p>
+</details>
+
+<hr style="border: none; border-top: 3px solid #000000; margin: 3em auto; width: 70%;">
+
+<h3 style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.5em; font-weight: 700; letter-spacing: 0.03em; border-left: 6px solid #000000; padding-left: 0.75em; margin-top: 2em; margin-bottom: 1em; color: #000000;">What is Complexity, Anyway?</h3>
+
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">In common parlance, "complex" means "complicated." But in computer science, complexity has a very specific meaning: <strong style="font-weight: 800;">How do the resources required to solve a problem grow as the problem itself gets bigger?</strong></p>
+
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">When we talk about "resources," we usually mean two things: <strong style="font-weight: 800;">Time</strong> (how many steps the computer has to take) and <strong style="font-weight: 800;">Space</strong> (how much memory it needs).</p>
+
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">To understand this, think about looking for a name in a physical phone book.</p>
+
+<ol style="list-style-type: decimal; margin-left: 1.5em; margin-bottom: 1.5em; line-height: 1.8; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; color: #000000; max-width: 75ch;">
+    <li style="margin-bottom: 0.75em; padding-left: 0.5em;"><strong style="font-weight: 800;">The Easy Way:</strong> If the book is alphabetized, you can use a "binary search." You open it to the middle, see if your name is in the first or second half, and repeat. If the phone book doubles in size, it only takes you <em style="font-style: italic; letter-spacing: 0.01em;">one extra step</em> to find the name. This is an "easy" problem.</li>
+    <li style="margin-bottom: 0.75em; padding-left: 0.5em;"><strong style="font-weight: 800;">The Hard Way:</strong> If the phone book is randomly sorted, you have to look at every single page. If the book doubles in size, your work doubles. If it grows by a factor of a billion, your work grows by a factor of a billion.</li>
+</ol>
+
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">Computational complexity provides a mathematical "ruler" to measure these growth rates. We call this <strong style="font-weight: 800;">Big O Notation</strong>. It’s a way of saying, "As this problem gets larger, here is the shape of the mountain we have to climb.
+</p>
+<figure style="margin: 2em 0; max-width: 75ch;">
+  <img style="width: 100%; height: auto; border: 1px solid #E0E0E0; border-radius: 4px;"
+       src="https://ik.imagekit.io/blamb/lms-content/fig1-2026-01-22_13-24-05_NPjH2k0BJ.png"
+       alt="A line graph comparing logarithmic, linear, and exponential growth curves in computational complexity."
+       loading="lazy" />
+  <figcaption style="padding: 0.75em 1em; font-style: italic; background-color: #F5F5F5; text-align: center; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 16px; color: #333333; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px;">
+    Figure 1: A comparison of how different types of problems grow in difficulty as the input size increases. <em>(Generated by AI)</em>
+  </figcaption>
+</figure>
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">
+"</p>
+
+<details style="background-color: #F5F5F5; border: 3px solid #000000; padding: 1.5em; margin: 2em 0; max-width: 75ch;">
+  <summary style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.1em; font-weight: 700; cursor: pointer; letter-spacing: 0.02em; color: #000000;">
+    ✦ KNOWLEDGE CHECK: In the context of computer science, what do we mean by "resources" when solving a problem?</summary>
+  <p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; margin-top: 1em; border-top: 2px solid #E0E0E0; padding-top: 1em; margin-bottom: 0; color: #000000;">
+    <strong style="font-weight: 800;">Answer:</strong> Resources primarily refer to Time (the number of steps a computer must take to reach a solution) and Space (the amount of memory or storage required during the process).</p>
+</details>
+
+<hr style="border: none; border-top: 3px solid #000000; margin: 3em auto; width: 70%;">
+
+<h3 style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.5em; font-weight: 700; letter-spacing: 0.03em; border-left: 6px solid #000000; padding-left: 0.75em; margin-top: 2em; margin-bottom: 1em; color: #000000;">The Landscape of Difficulty: P vs. NP</h3>
+
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">If you’ve ever heard a whisper about computer science theory, you’ve likely heard of <strong style="font-weight: 800;">P vs. NP</strong>. This is the "Holy Grail" of mathematics, and there is a $1 million prize waiting for whoever solves it. To understand it, we have to look at the two main "neighborhoods" of problems.</p>
+
+<h4 style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25em; font-weight: 700; font-style: italic; margin-top: 2em; margin-bottom: 0.75em; color: #000000;">Class P: The "Easy" Problems</h4>
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;"><strong style="font-weight: 800;">P</strong> stands for <strong style="font-weight: 800;">Polynomial Time</strong>. These are problems that computers are actually good at. Searching a list, sorting a deck of cards, or finding the shortest path between two cities on a GPS are all in Class P. As these problems get bigger, the time it takes to solve them grows at a manageable rate. If the input doubles, the time might quadruple—which sounds like a lot, but for a computer, it’s a breeze.</p>
+
+<h4 style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25em; font-weight: 700; font-style: italic; margin-top: 2em; margin-bottom: 0.75em; color: #000000;">Class NP: The "Easy to Check" Problems</h4>
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;"><strong style="font-weight: 800;">NP</strong> stands for <strong style="font-weight: 800;">Nondeterministic Polynomial Time</strong>. This is a bit of a mouthful, so let’s use an analogy: <strong style="font-weight: 800;">Sudoku.</strong></p>
+
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">Solving a high-level Sudoku puzzle from scratch can be very difficult and time-consuming. However, if I hand you a completed Sudoku grid and ask, "Is this correct?", you can verify it almost instantly.
+</p>
+<figure style="margin: 2em 0; max-width: 75ch;">
+  <img style="width: 100%; height: auto; border: 1px solid #E0E0E0; border-radius: 4px;"
+       src="https://ik.imagekit.io/blamb/lms-content/fig2-2026-01-22_13-24-05_Vk1emAPR7.png"
+       alt="A split illustration showing the difficulty of solving a Sudoku puzzle versus the ease of checking a finished one."
+       loading="lazy" />
+  <figcaption style="padding: 0.75em 1em; font-style: italic; background-color: #F5F5F5; text-align: center; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 16px; color: #333333; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px;">
+    Figure 2: The Sudoku analogy illustrates the difference between finding a solution and verifying one. <em>(Generated by AI)</em>
+  </figcaption>
+</figure>
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">
+ You just check the rows, columns, and squares.</p>
+
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">In short:</p>
+<ul style="list-style-type: square; margin-left: 1.5em; margin-bottom: 1.5em; line-height: 1.8; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; color: #000000; max-width: 75ch;">
+    <li style="margin-bottom: 0.75em; padding-left: 0.5em;"><strong style="font-weight: 800;">P</strong> is the class of problems that are easy to <strong style="font-weight: 800;">solve</strong>.</li>
+    <li style="margin-bottom: 0.75em; padding-left: 0.5em;"><strong style="font-weight: 800;">NP</strong> is the class of problems where the solution is easy to <strong style="font-weight: 800;">verify</strong>.</li>
+</ul>
+
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">The great mystery—the P vs. NP question—is this: <strong style="font-weight: 800;">If a solution is easy to verify, is it also secretly easy to solve?</strong> Most scientists believe the answer is "No," but no one has been able to prove it. If it turns out that P <em style="font-style: italic; letter-spacing: 0.01em;">does</em> equal NP, the world would change overnight. Every password would be crackable, but every logistical problem (like curing cancer or optimizing global flight paths) would suddenly become trivial.</p>
+
+<details style="background-color: #F5F5F5; border: 3px solid #000000; padding: 1.5em; margin: 2em 0; max-width: 75ch;">
+  <summary style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.1em; font-weight: 700; cursor: pointer; letter-spacing: 0.02em; color: #000000;">
+    ✦ KNOWLEDGE CHECK: What is the fundamental difference between Class P and Class NP problems?</summary>
+  <p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; margin-top: 1em; border-top: 2px solid #E0E0E0; padding-top: 1em; margin-bottom: 0; color: #000000;">
+    <strong style="font-weight: 800;">Answer:</strong> Class P problems are those that a computer can solve efficiently in a reasonable amount of time. Class NP problems are those where a solution might be hard to find, but once a solution is provided, it is easy for a computer to verify its correctness.</p>
+</details>
+
+<hr style="border: none; border-top: 3px solid #000000; margin: 3em auto; width: 70%;">
+
+<h3 style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.5em; font-weight: 700; letter-spacing: 0.03em; border-left: 6px solid #000000; padding-left: 0.75em; margin-top: 2em; margin-bottom: 1em; color: #000000;">The "Impossible" Problems: NP-Complete</h3>
+
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">Within the world of NP, there is a special group of "boss-level" problems called <strong style="font-weight: 800;">NP-Complete</strong>. These are the hardest problems in the category. They are fascinating because they are all mathematically linked. If you find an efficient way to solve <em style="font-style: italic; letter-spacing: 0.01em;">one</em> NP-Complete problem, you have effectively solved <em style="font-style: italic; letter-spacing: 0.01em;">all</em> of them.</p>
+
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">The most famous example is the <strong style="font-weight: 800;">Traveling Salesperson Problem</strong>. Imagine a salesman who needs to visit 50 cities and return home using the shortest possible route.
+</p>
+<figure style="margin: 2em 0; max-width: 75ch;">
+  <img style="width: 100%; height: auto; border: 1px solid #E0E0E0; border-radius: 4px;"
+       src="https://ik.imagekit.io/blamb/lms-content/fig3-2026-01-22_13-24-05_UxBwyE4Zx4.png"
+       alt="A map showing many cities connected by a dense web of paths, with one optimal route highlighted in blue."
+       loading="lazy" />
+  <figcaption style="padding: 0.75em 1em; font-style: italic; background-color: #F5F5F5; text-align: center; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 16px; color: #333333; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px;">
+    Figure 3: The Traveling Salesperson Problem: finding the single shortest path among a near-infinite number of options. <em>(Generated by AI)</em>
+  </figcaption>
+</figure>
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">
+ It sounds simple, but as you add cities, the number of possible routes grows <strong style="font-weight: 800;">exponentially</strong>.</p>
+
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;"><strong style="font-weight: 800;">Exponential growth</strong> is the "villain" of computational complexity. Unlike polynomial growth (where 10 becomes 100), exponential growth is explosive (where 10 becomes 1,000, 20 becomes 1,000,000, and 100 becomes a number larger than the atoms in the universe). These are the problems that make even our most powerful computers look like abacuses.</p>
+
+<details style="background-color: #F5F5F5; border: 3px solid #000000; padding: 1.5em; margin: 2em 0; max-width: 75ch;">
+  <summary style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.1em; font-weight: 700; cursor: pointer; letter-spacing: 0.02em; color: #000000;">
+    ✦ KNOWLEDGE CHECK: Why is exponential growth considered the "villain" of computational complexity?</summary>
+  <p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; margin-top: 1em; border-top: 2px solid #E0E0E0; padding-top: 1em; margin-bottom: 0; color: #000000;">
+    <strong style="font-weight: 800;">Answer:</strong> Exponential growth is explosive; as the problem size increases slightly, the resources required grow so rapidly that they quickly exceed the physical limits of any computer, making the problem practically unsolvable.</p>
+</details>
+
+<hr style="border: none; border-top: 3px solid #000000; margin: 3em auto; width: 70%;">
+
+<h3 style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.5em; font-weight: 700; letter-spacing: 0.03em; border-left: 6px solid #000000; padding-left: 0.75em; margin-top: 2em; margin-bottom: 1em; color: #000000;">Why Should You Care?</h3>
+
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">You might be wondering: "If these problems are so hard we can't solve them, why do they matter to me?"</p>
+
+<h4 style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25em; font-weight: 700; font-style: italic; margin-top: 2em; margin-bottom: 0.75em; color: #000000;">1. Your Digital Security</h4>
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">The entire infrastructure of the modern internet—from your WhatsApp messages to your online banking—relies on the fact that some problems are hard. Encryption (like RSA) is built on a mathematical problem that is easy to do in one direction (multiplying two large prime numbers) but incredibly hard to do in reverse (factoring the result back into the original primes). If someone discovers a way to solve these "hard" problems quickly, the digital world as we know it would be wide open to hackers.</p>
+
+<h4 style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25em; font-weight: 700; font-style: italic; margin-top: 2em; margin-bottom: 0.75em; color: #000000;">2. Science and Medicine</h4>
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">Protein folding is a biological version of the "seating chart" problem. To understand how a disease works or how to create a new vaccine, scientists need to know how a string of amino acids folds into a 3D shape. Because the number of possible shapes is astronomical, this is a massive complexity challenge. AI projects like Google’s AlphaFold are currently trying to "cheat" this complexity using machine learning.</p>
+
+<h4 style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25em; font-weight: 700; font-style: italic; margin-top: 2em; margin-bottom: 0.75em; color: #000000;">3. The Ethics of Automation</h4>
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">Complexity theory tells us there are limits to what we can optimize. We cannot have a perfectly efficient economy, a perfect schedule for every train, or a perfect distribution of resources because the math literally won’t allow it. Understanding these limits helps us set realistic expectations for technology.</p>
+
+<details style="background-color: #F5F5F5; border: 3px solid #000000; padding: 1.5em; margin: 2em 0; max-width: 75ch;">
+  <summary style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.1em; font-weight: 700; cursor: pointer; letter-spacing: 0.02em; color: #000000;">
+    ✦ KNOWLEDGE CHECK: How does computational complexity contribute to digital security?</summary>
+  <p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; margin-top: 1em; border-top: 2px solid #E0E0E0; padding-top: 1em; margin-bottom: 0; color: #000000;">
+    <strong style="font-weight: 800;">Answer:</strong> Modern encryption relies on the fact that certain mathematical problems (like factoring large prime numbers) are incredibly hard to solve in reverse. This "hardness" ensures that even powerful computers cannot easily crack passwords or secure communications.</p>
+</details>
+
+<hr style="border: none; border-top: 3px solid #000000; margin: 3em auto; width: 70%;">
+
+<h3 style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.5em; font-weight: 700; letter-spacing: 0.03em; border-left: 6px solid #000000; padding-left: 0.75em; margin-top: 2em; margin-bottom: 1em; color: #000000;">Summary</h3>
+
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">There is something strangely poetic about computational complexity. It suggests that the universe has a "speed limit," not just on how fast we can travel (the speed of light), but on how fast we can <em style="font-style: italic; letter-spacing: 0.01em;">think</em>.</p>
+
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">However, complexity isn't just about what we <em style="font-style: italic; letter-spacing: 0.01em;">can't</em> do; it’s about the clever ways we try to bypass the impossible. Because we can't solve the Traveling Salesperson Problem perfectly, we’ve developed "heuristics"—algorithms that give us a "good enough" answer in a reasonable amount of time. We’ve learned to compromise, finding beauty in the "almost perfect."</p>
+
+<p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; letter-spacing: 0.02em; word-spacing: 0.05em; margin-bottom: 1.5em; max-width: 75ch; color: #000000;">Computational complexity reminds us that the world is vast and the possibilities are nearly infinite. While our computers are getting faster every year, the problems we are trying to solve are growing even faster. It is a never-ending race between the power of our machines and the inherent difficulty of logic itself. And for now, the mysteries of the "hard" problems are what keep our data safe and our curiosity burning.</p>
+
+<details style="background-color: #F5F5F5; border: 3px solid #000000; padding: 1.5em; margin: 2em 0; max-width: 75ch;">
+  <summary style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.1em; font-weight: 700; cursor: pointer; letter-spacing: 0.02em; color: #000000;">
+    ✦ KNOWLEDGE CHECK: What are "heuristics" and why are they used in complexity theory?</summary>
+  <p style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.8; margin-top: 1em; border-top: 2px solid #E0E0E0; padding-top: 1em; margin-bottom: 0; color: #000000;">
+    <strong style="font-weight: 800;">Answer:</strong> Heuristics are algorithms designed to find "good enough" or approximate solutions in a reasonable amount of time for problems that are too complex to solve perfectly.</p>
+</details>
+
+<hr style="border: none; border-top: 3px solid #000000; margin: 3em auto; width: 70%;">
+
+<h3 style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.5em; font-weight: 700; letter-spacing: 0.03em; border-left: 6px solid #000000; padding-left: 0.75em; margin-top: 2em; margin-bottom: 1em; color: #000000;">Glossary of Key Terms</h3>
+
+<dl style="margin-bottom: 2em; border-left: 4px solid #000000; padding-left: 1.5em; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; max-width: 75ch;">
+    <dt style="font-size: 1.1em; font-weight: 800; letter-spacing: 0.02em; margin-top: 1.5em; margin-bottom: 0.25em; color: #000000;"><strong style="font-weight: 800;">Computational Complexity</strong></dt>
+    <dd style="font-size: 18px; line-height: 1.8; margin-left: 0; margin-bottom: 1em; padding-left: 1em; border-left: 2px solid #E0E0E0; color: #000000;">The study of the resources (such as time and space) required to solve a given problem as the size of the input increases.</dd>
+    
+    <dt style="font-size: 1.1em; font-weight: 800; letter-spacing: 0.02em; margin-top: 1.5em; margin-bottom: 0.25em; color: #000000;"><strong style="font-weight: 800;">Big O Notation</strong></dt>
+    <dd style="font-size: 18px; line-height: 1.8; margin-left: 0; margin-bottom: 1em; padding-left: 1em; border-left: 2px solid #E0E0E0; color: #000000;">A mathematical notation used to describe the limiting behavior of a function, specifically the growth rate of an algorithm's resource requirements.</dd>
+    
+    <dt style="font-size: 1.1em; font-weight: 800; letter-spacing: 0.02em; margin-top: 1.5em; margin-bottom: 0.25em; color: #000000;"><strong style="font-weight: 800;">P (Polynomial Time)</strong></dt>
+    <dd style="font-size: 18px; line-height: 1.8; margin-left: 0; margin-bottom: 1em; padding-left: 1em; border-left: 2px solid #E0E0E0; color: #000000;">A complexity class representing problems that can be solved by a computer in a reasonable, manageable amount of time.</dd>
+    
+    <dt style="font-size: 1.1em; font-weight: 800; letter-spacing: 0.02em; margin-top: 1.5em; margin-bottom: 0.25em; color: #000000;"><strong style="font-weight: 800;">NP (Nondeterministic Polynomial Time)</strong></dt>
+    <dd style="font-size: 18px; line-height: 1.8; margin-left: 0; margin-bottom: 1em; padding-left: 1em; border-left: 2px solid #E0E0E0; color: #000000;">A complexity class representing problems for which a proposed solution can be verified quickly, even if finding the solution is difficult.</dd>
+    
+    <dt style="font-size: 1.1em; font-weight: 800; letter-spacing: 0.02em; margin-top: 1.5em; margin-bottom: 0.25em; color: #000000;"><strong style="font-weight: 800;">NP-Complete</strong></dt>
+    <dd style="font-size: 18px; line-height: 1.8; margin-left: 0; margin-bottom: 1em; padding-left: 1em; border-left: 2px solid #E0E0E0; color: #000000;">A subset of NP problems that are the hardest to solve; solving any one of these efficiently would provide an efficient solution for all problems in NP.</dd>
+    
+    <dt style="font-size: 1.1em; font-weight: 800; letter-spacing: 0.02em; margin-top: 1.5em; margin-bottom: 0.25em; color: #000000;"><strong style="font-weight: 800;">Traveling Salesperson Problem</strong></dt>
+    <dd style="font-size: 18px; line-height: 1.8; margin-left: 0; margin-bottom: 1em; padding-left: 1em; border-left: 2px solid #E0E0E0; color: #000000;">A classic NP-Complete problem that asks for the shortest possible route that visits a set of cities and returns to the origin city.</dd>
+    
+    <dt style="font-size: 1.1em; font-weight: 800; letter-spacing: 0.02em; margin-top: 1.5em; margin-bottom: 0.25em; color: #000000;"><strong style="font-weight: 800;">Exponential Growth</strong></dt>
+    <dd style="font-size: 18px; line-height: 1.8; margin-left: 0; margin-bottom: 1em; padding-left: 1em; border-left: 2px solid #E0E0E0; color: #000000;">A rate of growth that becomes increasingly rapid, often making problems unsolvable for large inputs because the required resources exceed physical limits.</dd>
+</dl>
