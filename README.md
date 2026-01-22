@@ -15,6 +15,7 @@ Generate Canvas LMS-ready educational HTML using a four-agent prompt chain (cont
   - Default: images enabled only for `textbook`
   - Force images: `--force-images`
   - Disable images: `--no-images`
+- Agent A prompt override (non-interactive): `--agent-a-instruction "<custom text>"`
 
 ## Requirements
 - Python 3.13+ (see `pyproject.toml`)
@@ -80,3 +81,4 @@ lms_output/
 ## Notes
 - Image generation is only enabled by default for `textbook` content types.
 - If Agent D JSON parsing fails, raw responses are saved as `debug_agent_d_brainstorm_attempt*.txt` in the run folder.
+- The pipeline configures UTF-8 console output at startup to avoid Unicode errors on Windows terminals.
