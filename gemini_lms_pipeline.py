@@ -96,6 +96,12 @@ MAX_IMAGES: Final[int] = 3
 # Paths
 PROMPTS_DIR = Path("prompts")
 DEFAULT_IMAGEKIT_FOLDER: Final[str] = "/lms-content/"
+AGENT_A_PRESET_INSTRUCTIONS: Final[dict[str, str]] = {
+    "blog_intro_1000": (
+        "Write a 1000-word blog post introduction about the user's topic for a "
+        "general audience. Use the topic provided as the subject of the post."
+    ),
+}
 
 # =============================================================================
 # DATA STRUCTURES
@@ -125,6 +131,7 @@ class PipelineConfig:
     enable_images: bool
     imagekit_folder: str = DEFAULT_IMAGEKIT_FOLDER
     agent_a_instruction: Optional[str] = None
+    agent_a_instruction_source: Optional[str] = None
 
 
 @dataclass
@@ -751,28 +758,39 @@ def get_topic_prompt(content_type: ContentType) -> str:
     return prompts[content_type]
 
 
-def prompt_agent_a_override(content_type: ContentType) -> Optional[str]:
-    print("\nWould you like to override Agent A's default prompt?")
-    choice = input("Enter y/N: ").strip().lower()
-    if choice not in {"y", "yes"}:
-        return None
+def prompt_agent_a_override(content_type: ContentType) -> tuple[Optional[str], Optional[str]]:
+    print("\nAgent A prompt options:")
+    print("  [1] Default prompt")
+    print("  [2] Preset: 1000-word blog intro (uses your topic)")
+    print("  [3] Custom instructions")
 
-    print("\nEnter custom instructions for Agent A.")
-    print("Press Enter on an empty line to finish.")
-    lines = []
     while True:
-        line = input()
-        if not line.strip():
-            break
-        lines.append(line)
+        choice = input("Choose 1-3 (default 1): ").strip().lower() or "1"
+        if choice in {"1", "default", "d"}:
+            return None, None
+        if choice in {"2", "preset", "p"}:
+            instruction = AGENT_A_PRESET_INSTRUCTIONS["blog_intro_1000"]
+            print(f"✅ Using preset Agent A instructions for {content_type.value}.")
+            return instruction, "preset:blog_intro_1000"
+        if choice in {"3", "custom", "c"}:
+            print("\nEnter custom instructions for Agent A.")
+            print("Press Enter on an empty line to finish.")
+            lines = []
+            while True:
+                line = input()
+                if not line.strip():
+                    break
+                lines.append(line)
 
-    instruction = "\n".join(lines).strip()
-    if not instruction:
-        print("No custom instructions provided. Using default prompt.")
-        return None
+            instruction = "\n".join(lines).strip()
+            if not instruction:
+                print("No custom instructions provided. Using default prompt.")
+                return None, None
 
-    print(f"✅ Using custom Agent A instructions for {content_type.value}.")
-    return instruction
+            print(f"✅ Using custom Agent A instructions for {content_type.value}.")
+            return instruction, "custom:interactive"
+
+        print("Invalid choice. Please enter 1, 2, or 3.")
 
 
 def parse_args() -> argparse.Namespace:
@@ -780,6 +798,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--topic", "-t", help="Topic for content generation")
     parser.add_argument("--type", "-c", choices=["textbook", "discussion", "assignment"], help="Content type")
     parser.add_argument("--agent-a-instruction", help="Override Agent A system prompt with custom instructions")
+    parser.add_argument(
+        "--agent-a-preset",
+        choices=sorted(AGENT_A_PRESET_INSTRUCTIONS.keys()),
+        help="Use a preset Agent A instruction",
+    )
     parser.add_argument("--no-images", action="store_true", help="Skip image generation")
     parser.add_argument("--force-images", action="store_true", help="Force image generation for non-textbooks")
     return parser.parse_args()
@@ -816,9 +839,17 @@ def main() -> int:
     else:
         content_type = display_menu()
 
-    agent_a_instruction = args.agent_a_instruction
-    if agent_a_instruction is None and args.type is None:
-        agent_a_instruction = prompt_agent_a_override(content_type)
+    agent_a_instruction = None
+    agent_a_instruction_source = None
+    if args.agent_a_instruction:
+        agent_a_instruction = args.agent_a_instruction
+        agent_a_instruction_source = "custom:cli"
+    elif args.agent_a_preset:
+        preset_key = args.agent_a_preset
+        agent_a_instruction = AGENT_A_PRESET_INSTRUCTIONS[preset_key]
+        agent_a_instruction_source = f"preset:{preset_key}"
+    elif args.type is None:
+        agent_a_instruction, agent_a_instruction_source = prompt_agent_a_override(content_type)
 
     # Image Logic
     enable_images = (
@@ -895,6 +926,7 @@ def main() -> int:
         enable_images=enable_images,
         imagekit_folder=os.environ.get("IMAGEKIT_FOLDER", DEFAULT_IMAGEKIT_FOLDER),
         agent_a_instruction=agent_a_instruction,
+        agent_a_instruction_source=agent_a_instruction_source,
     )
 
     state = PipelineState(
@@ -907,7 +939,7 @@ def main() -> int:
     state.log(f"Content type: {content_type.value}")
     state.log(f"Topic: {topic}")
     if agent_a_instruction:
-        state.log("Agent A prompt override: enabled")
+        state.log(f"Agent A prompt override: {agent_a_instruction_source or 'enabled'}")
         state.log(f"Agent A custom instructions:\n{agent_a_instruction}")
     else:
         state.log(f"Agent A prompt file: prompts/{prompt_file}")
