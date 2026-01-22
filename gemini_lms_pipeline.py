@@ -124,6 +124,7 @@ class PipelineConfig:
     images_dir: Path
     enable_images: bool
     imagekit_folder: str = DEFAULT_IMAGEKIT_FOLDER
+    agent_a_instruction: Optional[str] = None
 
 
 @dataclass
@@ -237,7 +238,7 @@ def parse_json_response(text: str) -> tuple[Optional[dict], Optional[str]]:
         return json.loads(cleaned), None
     except json.JSONDecodeError as json_err:
         repaired = escape_control_chars_in_strings(cleaned)
-        repaired = re.sub(r",\s*([}\]])", r"\1", repaired)
+        repaired = remove_trailing_commas_outside_strings(repaired)
         try:
             return json.loads(repaired), None
         except json.JSONDecodeError as json_err_repaired:
@@ -254,6 +255,44 @@ def save_debug_response(state: PipelineState, stage: str, attempt: int, response
         return debug_path
     except OSError:
         return None
+
+
+def remove_trailing_commas_outside_strings(text: str) -> str:
+    """Remove trailing commas that appear outside of JSON string values."""
+    result = []
+    in_string = False
+    escape = False
+    length = len(text)
+
+    i = 0
+    while i < length:
+        ch = text[i]
+        if escape:
+            result.append(ch)
+            escape = False
+            i += 1
+            continue
+        if ch == "\\":
+            result.append(ch)
+            escape = True
+            i += 1
+            continue
+        if ch == "\"":
+            in_string = not in_string
+            result.append(ch)
+            i += 1
+            continue
+        if not in_string and ch == ",":
+            j = i + 1
+            while j < length and text[j].isspace():
+                j += 1
+            if j < length and text[j] in "}]":
+                i += 1
+                continue
+        result.append(ch)
+        i += 1
+
+    return "".join(result)
 
 
 def word_to_pattern(word: str) -> str:
@@ -293,12 +332,15 @@ def stage_a_write_content(state: PipelineState) -> bool:
     """Agent A: Write educational content."""
     state.log("\n📝 [1/4] Agent A: Writing content...")
 
-    prompt_file = f"agent_a_{state.config.content_type.value}.txt"
-    try:
-        system_prompt = load_prompt(prompt_file)
-    except FileNotFoundError as e:
-        state.log(f"    ❌ Error: {e}")
-        return False
+    if state.config.agent_a_instruction:
+        system_prompt = state.config.agent_a_instruction
+    else:
+        prompt_file = f"agent_a_{state.config.content_type.value}.txt"
+        try:
+            system_prompt = load_prompt(prompt_file)
+        except FileNotFoundError as e:
+            state.log(f"    ❌ Error: {e}")
+            return False
 
     try:
         response = state.gemini_client.models.generate_content(
@@ -433,7 +475,7 @@ def stage_d_brainstorm_images(state: PipelineState) -> bool:
             config=types.GenerateContentConfig(
                 system_instruction=system_prompt,
                 temperature=0.3,
-                max_output_tokens=4096,
+                max_output_tokens=8192,
                 response_mime_type="application/json"
             ),
         )
@@ -459,7 +501,7 @@ def stage_d_brainstorm_images(state: PipelineState) -> bool:
                 config=types.GenerateContentConfig(
                     system_instruction=system_prompt,
                     temperature=0.2,
-                    max_output_tokens=4096,
+                    max_output_tokens=8192,
                     response_mime_type="application/json"
                 ),
             )
@@ -473,16 +515,42 @@ def stage_d_brainstorm_images(state: PipelineState) -> bool:
                     state.log(f"    Debug - Raw response saved to: {debug_path.name}")
                 return False
 
-        for i, item in enumerate(data.get("images", [])[:MAX_IMAGES], start=1):
+        if isinstance(data, dict):
+            raw_images = data.get("images", [])
+        elif isinstance(data, list):
+            raw_images = data
+        else:
+            raw_images = []
+
+        if not isinstance(raw_images, list):
+            state.log("    ⚠️ Agent D response schema unexpected; no images parsed.")
+            raw_images = []
+
+        skipped = 0
+        for i, item in enumerate(raw_images[:MAX_IMAGES], start=1):
+            if not isinstance(item, dict):
+                skipped += 1
+                continue
+            insertion_context = str(item.get("insertion_context", "")).strip()
+            image_prompt = str(item.get("image_prompt", "")).strip()
+            alt_text = str(item.get("alt_text", "")).strip()
+            caption = str(item.get("caption", "")).strip() or f"Figure {i}: Illustration"
+
+            if not insertion_context or not image_prompt or not alt_text:
+                skipped += 1
+                continue
+
             plan = ImagePlan(
-                insertion_context=item["insertion_context"],
-                image_prompt=item["image_prompt"],
-                alt_text=item["alt_text"][:125],
-                caption=item["caption"],
+                insertion_context=insertion_context,
+                image_prompt=image_prompt,
+                alt_text=alt_text[:125],
+                caption=caption,
                 figure_number=i,
             )
             state.image_plans.append(plan)
 
+        if skipped:
+            state.log(f"    ⚠️ Skipped {skipped} malformed image entries")
         state.log(f"    ✓ Identified {len(state.image_plans)} image insertion points")
         return True
 
@@ -683,10 +751,35 @@ def get_topic_prompt(content_type: ContentType) -> str:
     return prompts[content_type]
 
 
+def prompt_agent_a_override(content_type: ContentType) -> Optional[str]:
+    print("\nWould you like to override Agent A's default prompt?")
+    choice = input("Enter y/N: ").strip().lower()
+    if choice not in {"y", "yes"}:
+        return None
+
+    print("\nEnter custom instructions for Agent A.")
+    print("Press Enter on an empty line to finish.")
+    lines = []
+    while True:
+        line = input()
+        if not line.strip():
+            break
+        lines.append(line)
+
+    instruction = "\n".join(lines).strip()
+    if not instruction:
+        print("No custom instructions provided. Using default prompt.")
+        return None
+
+    print(f"✅ Using custom Agent A instructions for {content_type.value}.")
+    return instruction
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="LMS Content Pipeline (Gemini Edition)")
     parser.add_argument("--topic", "-t", help="Topic for content generation")
     parser.add_argument("--type", "-c", choices=["textbook", "discussion", "assignment"], help="Content type")
+    parser.add_argument("--agent-a-instruction", help="Override Agent A system prompt with custom instructions")
     parser.add_argument("--no-images", action="store_true", help="Skip image generation")
     parser.add_argument("--force-images", action="store_true", help="Force image generation for non-textbooks")
     return parser.parse_args()
@@ -710,11 +803,23 @@ def main() -> int:
     else:
         content_type = display_menu()
 
+    agent_a_instruction = args.agent_a_instruction
+    if agent_a_instruction is None and args.type is None:
+        agent_a_instruction = prompt_agent_a_override(content_type)
+
     # Image Logic
     enable_images = (
         not args.no_images
         and (content_type == ContentType.TEXTBOOK or args.force_images)
     )
+
+    # Validate Environment
+    valid, missing = validate_environment(enable_images)
+    if not valid:
+        print(f"\n❌ Missing environment variables:")
+        for var in missing:
+            print(f"   • {var}")
+        return 1
 
     if args.no_images:
         print("\n📷 Image generation: Disabled (--no-images)")
@@ -725,14 +830,6 @@ def main() -> int:
             print("\n📷 Image generation: Enabled (Local Only - ImageKit missing)")
     else:
         print("\n📷 Image generation: Skipped (default for this type)")
-
-    # Validate Environment
-    valid, missing = validate_environment(enable_images)
-    if not valid:
-        print(f"\n❌ Missing environment variables:")
-        for var in missing:
-            print(f"   • {var}")
-        return 1
 
     # Topic
     if args.topic:
@@ -783,7 +880,8 @@ def main() -> int:
         content_dir=content_dir,
         images_dir=images_dir,
         enable_images=enable_images,
-        imagekit_folder=os.environ.get("IMAGEKIT_FOLDER", DEFAULT_IMAGEKIT_FOLDER)
+        imagekit_folder=os.environ.get("IMAGEKIT_FOLDER", DEFAULT_IMAGEKIT_FOLDER),
+        agent_a_instruction=agent_a_instruction,
     )
 
     state = PipelineState(
@@ -791,6 +889,15 @@ def main() -> int:
         gemini_client=gemini_client,
         imagekit_client=imagekit_client
     )
+
+    prompt_file = f"agent_a_{content_type.value}.txt"
+    state.log(f"Content type: {content_type.value}")
+    state.log(f"Topic: {topic}")
+    if agent_a_instruction:
+        state.log("Agent A prompt override: enabled")
+        state.log(f"Agent A custom instructions:\n{agent_a_instruction}")
+    else:
+        state.log(f"Agent A prompt file: prompts/{prompt_file}")
 
     # Execution
     success = True
