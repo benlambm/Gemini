@@ -35,10 +35,14 @@ This repository contains a linear, four-agent prompt-chain that generates Canvas
 - `python gemini_lms_pipeline.py --type textbook --topic "Test Topic"`
 - `python gemini_lms_pipeline.py --no-images`
 - `python gemini_lms_pipeline.py --type discussion --topic "Sample" --force-images`
+- `python imagekit_upload.py <image-file>`
+- `python imagekit_upload.py photo.png --folder /docs/ --tags doc,diagram`
+- `python imagekit_upload.py photo.jpg -q | clip` (copy URL to clipboard)
 
 ## Key files vs. legacy/abandoned files
 Key files:
 - `gemini_lms_pipeline.py`
+- `imagekit_upload.py` (standalone ImageKit upload CLI)
 - `prompts/`
 - `pyproject.toml`, `uv.lock`
 - `list_models.py` (optional utility)
